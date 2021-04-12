@@ -62,7 +62,7 @@ def test_cyclegan_fid(model, opt):
     return AtoB_fid, BtoA_fid
 
 def test_pix2pix_fid(model, opt):
-    opt.phase = 'val'
+    opt.phase = 'val' # 根据自己的需要修改
     opt.num_threads = 0
     opt.batch_size = 1
     opt.serial_batches = True

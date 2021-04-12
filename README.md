@@ -1,83 +1,51 @@
-## Learning Efficient GANs using Differentiable Masks and Co-Attention Distillation ([Link](http://arxiv.org/abs/2011.08382))![]( https://visitor-badge.glitch.me/badge?page_id=sjleo.dmad).
-
-<div align=center><img src="img/framework.png" height = "50%" width = "60%"/></div>
-
-Framework of our method. We first build a pre-trained model similar to a GAN network, upon which a differentiable mask is imposed to scale the convolutional outputs of the generator and derive a light-weight one. Then, the co-Attention of the pre-trained GAN and the outputs of the last-layer convolutions of the discriminator are distilled to stabilize the training of the light-weight model.
+<font size =4 face=宋体>&emsp;&emsp;**[原始<font size =4 face=Times New Roman>README</font>](README_original.md)**
+</font>
+<br>
 
 
+<font size =4 face=宋体>&emsp;&emsp;最近在做毕设，翻GitHub时看到原作者的repo，就尝试拿来跑一下自己的数据。结果一上来就报错（除了一些通用性比较高的repo外，很多都会遇到这种问题），解决了半天的环境问题，遇到下面的这个错误：
+</font>
+<br>
 
-### Tips
+'''
+/home/wlw19/miniconda3/lib/python3.8/site-packages/torchvision/transforms/transforms.py:257: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  warnings.warn(
+/home/wlw19/miniconda3/lib/python3.8/site-packages/torchvision/models/inception.py:80: FutureWarning: The default weight initialization of inception_v3 will be changed in future releases of torchvision. If you wish to keep the old behavior (which leads to long initialization times due to scipy/scipy#11299), please set init_weights=True.
+  warnings.warn('The default weight initialization of inception_v3 will be changed in future releases of '
+Traceback (most recent call last):
+  File "train.py", line 278, in <module>
+    test(model, opt, logger, total_iters, best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch,
+  File "train.py", line 173, in test
+    fid = test_pix2pix_fid(model, copy.copy(opt))
+  File "train.py", line 92, in test_pix2pix_fid
+    fid = get_fid(list(fake_B.values()), inception_model, npz, model.device, opt.batch_size)
+  File "/media/wlw19/Elements/415_experiments/WH/code/DMAD-master/metric/__init__.py", line 9, in get_fid
+    m1, s1 = npz['mu'], npz['sigma']
+  File "/home/wlw19/.local/lib/python3.8/site-packages/numpy/lib/npyio.py", line 259, in __getitem__
+    raise KeyError("%s is not a file in the archive" % key)
+KeyError: 'mu is not a file in the archive'
+'''
 
-Any problem, free to contact the first authors ([shaojieli@stu.xmu.edu.cn](mailto:shaojieli@stu.xmu.edu.cn)).
+<font size =4 face=宋体>&emsp;&emsp;刚开始我没有看源码，对这个错误不明所以，看了后才知道：原作者是一边训练数据、训练一次后就测试FID，并把FID值最低的模型权重的epoch数、FID值都保存下来，报错代码的**m2, s1**就是用来测试FID的。但我用自己的数据所生成的**npz**文件没有这两个标签，所以报错。（我写了个脚本，测了一下自己数据生成的 **npz** ，只有一个vol标签）
+</font>
+<br>
 
+<font size =4 face=宋体>&emsp;&emsp;反正，报错信息是与计算FID有关的，那我换种方式计算FID就行了。正好源码的 **metric** 文件夹下 **fid_score.py**就是用来计算FID的，而且提供了图片路径作为参数计算FID的函数 **calculate_fid_given_paths**。那么，直接把**train.py**相应的代码注释掉，换成**calculate_fid_given_paths**来计算FID就可以了。
+</font>
+<br>
 
+<font size =4 face=宋体>&emsp;&emsp;训练、测试跑完后，发现这个repo的pix2pix并不适合我的数据，弃用。如图1所示，Attention 1和 Attention 2是我自己的方法。
+</font>
+<br>
 
-### Getting Started
-
-The code has been tested using Pytorch1.5.1 and CUDA10.2 on Ubuntu 18.04.
-
-Please type the command 
-
-```shell
-pip install -r requirements.txt
-```
-
-to install dependencies.
-
-#### CycleGAN
-
-- Download the Cyclcegan dataset (eg. horse2zebra)
-
-  ```shell
-  bash datasets/download_cyclegan_dataset.sh horse2zebra
-  ```
-
-- Download our pre-prepared real statistic information for computing FID, and then copy them to the root directionary of dataset.
-
-  |     Task      |                           Download                           |
-  | :-----------: | :----------------------------------------------------------: |
-  |  horse2zebra  | [Link](https://drive.google.com/drive/folders/1wUGazdIe_B4gHs_gMq-jRWW53yKbyOcs?usp=sharing) |
-  | summer2winter | [Link](https://drive.google.com/drive/folders/1JKJlpUDdD4TdXdwPwfdWUiF4PsXLAbto?usp=sharing) |
-
-- Train the model using our differentiable masks (eg. horse2zebra)
-
-  ```shell
-  bash scripts/cyclegan/horse2zebra/train.sh
-  ```
-
-- Finetune the searched light-weight models with co-Attention distillation
-
-  ```shell
-  bash scripts/cyclegan/horse2zebra/finetune.sh
-  ```
-
-#### Pix2Pix
-
-- Download the Pix2Pix dataset (eg. edges2shoes)
-
-  ```shell
-  bash datasets/download_pix2pix_dataset.sh edges2shoes-r
-  ```
-
-- Download our  pre-trained real statistic information for computing FID or  DRN-D-105 model for computing mIOU, and then copy them to the root directionary of dataset.
-
-  |    Task     |                           Download                           |
-  | :---------: | :----------------------------------------------------------: |
-  | edges2shoes | [Link](https://drive.google.com/file/d/1B2iBvJWuhlYYgR5wpjMnWoDJcD4NNK-p/view?usp=sharing) |
-  | cityscapes  | [Link](https://drive.google.com/file/d/1V4RmILQ0QGNQTRvMlSzN-rkvRAdmKMOr/view?usp=sharing) |
-
-- Train the model using our differentiable masks (eg. edges2shoes)
-
-  ```shell
-  bash scripts/pix2pix/edges2shoes/train.sh
-  ```
-
-- Finetune the searched light-weight models with co-Attention distillation
-
-  ```shell
-  bash scripts/pix2pix/edges2shoes/finetune.sh
-  ```
-
-## Acknowledgements
-
-Our code is developed based on [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix) and [GAN Compression](https://github.com/mit-han-lab/gan-compression).
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    src="img/123.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">图 1 Epoch对比</div>
+</center>
+<br>
