@@ -5,11 +5,13 @@ from data import create_dataset
 from metric import get_fid, get_mIoU
 from metric.inception import InceptionV3
 from metric.mIoU_score import DRNSeg
+from metric.fid_score import calculate_fid_given_paths
 import utils.util as util
 from models import CycleGAN, MaskCycleGAN, Pix2Pix, MaskPix2Pix
 from models import MobileCycleGAN, MaskMobileCycleGAN, MobilePix2Pix, MaskMobilePix2Pix
 
 import os
+import time
 import ntpath
 import copy
 import numpy as np
@@ -87,8 +89,10 @@ def test_pix2pix_fid(model, opt):
     inception_model = InceptionV3([block_idx])
     inception_model.to(model.device)
     inception_model.eval()
-    npz = np.load(os.path.join(opt.dataroot, 'real_stat_B.npz'))
-    fid = get_fid(list(fake_B.values()), inception_model, npz, model.device, opt.batch_size)
+    # npz = np.load(os.path.join(opt.dataroot, 'real_stat_B.npz'))
+    # fid = get_fid(list(fake_B.values()), inception_model, npz, model.device, opt.batch_size)
+    # commented by WH at 18:29 of 2021-04-10
+    fid = calculate_fid_given_paths((opt.src_pics_path, opt.dst_pics_path), 1, True, 2048)
 
     return fid
 
@@ -145,8 +149,11 @@ def get_flops_parms(model, opt, name, verbose=False):
 
     print("%s | Params: %.2fM | MACs: %.2fG" % (name, params / (1000 ** 2), macs / (1000 ** 3)))
 
+test_logs = open('DMAD_1098_2021_04_10_test.log', 'w+')
+
 if __name__ == '__main__':
 
+    start = time.time()
     opt = options.parse()
     opt.isTrain = False
 
@@ -198,7 +205,14 @@ if __name__ == '__main__':
             mIoU = test_pix2pix_mIoU(model, copy.copy(opt))
             print('mIoU: %.2f' % mIoU)
         else:
+            print('FID calculation starts!')
+            print('FID calculating!')
             fid = test_pix2pix_fid(model, copy.copy(opt))
+            end = time.time()
             print('FID: %.2f' % fid)
+            print('FID: %.2f' % fid, file = test_logs)
+            print('Time used: %.2f' % (end - start))
+            print('Time used: %.2f' % (end - start), file = test_logs)
+            print('FID calculation finished!')
     else:
         raise NotImplementedError('%s not implements!' % opt.model)

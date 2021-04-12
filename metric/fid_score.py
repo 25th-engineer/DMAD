@@ -43,7 +43,7 @@ from cv2 import imread
 from scipy import linalg
 from torch.nn.functional import adaptive_avg_pool2d
 
-from .inception import InceptionV3
+from metric.inception import InceptionV3
 
 # try:
 #     from tqdm import tqdm
@@ -65,6 +65,10 @@ parser.add_argument('--dims', type=int, default=2048,
 parser.add_argument('-c', '--gpu', default='', type=str,
                     help='GPU to use (leave blank for CPU only)')
 
+parser.add_argument('--src_pics_path', type=str, default='/mnt/data/pix2pix_dataset_bubble/1098/valA/',
+                    help='the path of source(real) images')
+parser.add_argument('--dst_pics_path', type=str, default='/mnt/DMAD-master/checkpoints/1098/test_results/fake_B/',
+                    help='the path of generated(fake) images')
 
 def get_activations(files, model, batch_size=50, dims=2048,
                     cuda=False, verbose=False, use_tqdm=False):
@@ -316,7 +320,7 @@ def _compute_statistics_of_path(path, model, batch_size, dims, cuda, use_tqdm=Fa
         f.close()
     else:
         path = pathlib.Path(path)
-        files = list(path.glob('*.jpg')) + list(path.glob('*.png'))
+        files = list(path.glob('*.jpg')) + list(path.glob('*.png')) + list(path.glob('*.tif'))
         m, s = calculate_activation_statistics(files, model, batch_size,
                                                dims, cuda, use_tqdm=use_tqdm)
     return m, s
@@ -369,7 +373,17 @@ def calculate_fid_given_paths(paths, batch_size, cuda, dims, model=None, use_tqd
 
     return fid_value
 
-# def main():
-#     fid_value = calculate_fid_given_paths(('datasets/coco_stuff/val_img', 'datasets/coco_stuff/val_img'),
+# import datetime, time
+# if __name__ == '__main__':
+#     starttime = datetime.datetime.now()
+#     start = time.time()
+#     fid_value = calculate_fid_given_paths(('/mnt/data/pix2pix_dataset_bubble/1098/valA/',
+#                                            '/mnt/DMAD-master/checkpoints/1098/test_results/fake_B/'),
 #                                           1, True, 2048)
+#     endtime = datetime.datetime.now()
+#     end = time.time()
+#     print('used time 1:')
+#     print((endtime - starttime).seconds)
+#     print('used time 2:')
+#     print(end - start)
 #     print('FID: ', fid_value)

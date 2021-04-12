@@ -91,6 +91,8 @@ def test_pix2pix_fid(model, opt):
     npz = np.load(os.path.join(opt.dataroot, 'real_stat_B.npz'))
     fid = get_fid(list(fake_B.values()), inception_model, npz, model.device, opt.batch_size)
 
+
+
     return fid
 
 def test_pix2pix_mIoU(model, opt):
@@ -234,6 +236,8 @@ if __name__ == '__main__':
     logger.info('The number of training images = %d' % dataset_size)
 
     visualizer = Visualizer(opt)
+
+
     total_iters = 0
     all_total_iters = dataset_size * opt.batch_size * (opt.n_epochs + opt.n_epochs_decay)
     update_bound_freq = all_total_iters * 0.75 // 150 // opt.batch_size
@@ -274,9 +278,12 @@ if __name__ == '__main__':
 
             if (total_iters // opt.batch_size) % update_bound_freq == 0 and opt.mask:
                 if epoch % opt.save_epoch_freq == 0:
-                    best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = \
-                        test(model, opt, logger, total_iters, best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch,
-                             best_BtoA_epoch, all_total_iters=all_total_iters)
+                    best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = 0, 0, 5, 5, 0
+                    # modified by WH at 12:12 of 2021-04-10
+                    # best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = \
+                    #                         test(model, opt, logger, total_iters, best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch,
+                    #                              best_BtoA_epoch, all_total_iters=all_total_iters)
+
                     logger.info('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
                     model.save_models(total_iters, os.path.join(opt.checkpoints_dir, opt.name, 'checkpoints'), fid=fid)
                 model.print_sparsity_info(logger)
@@ -294,8 +301,10 @@ if __name__ == '__main__':
                 iter_data_time = time.time()
 
         if not opt.mask and epoch % opt.save_epoch_freq == 0:
-            best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = \
-                test(model, opt, logger, epoch, best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch)
+            best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = 0, 0, 5, 5, 0
+            # modified by WH at 12:12 of 2021-04-10
+            # best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch, fid = \
+            #                 test(model, opt, logger, epoch, best_AtoB_fid, best_BtoA_fid, best_AtoB_epoch, best_BtoA_epoch)
             logger.info('saving the model at the end of epoch %d, iters %d' % (epoch, total_iters))
             model.save_models(epoch, os.path.join(opt.checkpoints_dir, opt.name, 'checkpoints'), fid=fid)
 
@@ -304,12 +313,13 @@ if __name__ == '__main__':
 
         model.update_learning_rate(epoch)  # update learning rates at the end of every epoch.
 
-    logger.info('Best AtoB Epoch %d:%.2f' % (best_AtoB_epoch, best_AtoB_fid))
-    logger.info('Best BtoA Epoch %d:%.2f' % (best_BtoA_epoch, best_BtoA_fid))
-
-    util.combine_best_model(best_AtoB_epoch=best_AtoB_epoch,
-                            best_BtoA_epoch=best_BtoA_epoch,
-                            source_path=os.path.join(opt.checkpoints_dir, opt.name, 'checkpoints'),
-                            target_path=os.path.join(opt.checkpoints_dir, opt.name),
-                            type=opt.model)
-    logger.info('Best model save in %s' % os.path.join(opt.checkpoints_dir, opt.name, 'model_best.pth'))
+    # logger.info('Best AtoB Epoch %d:%.2f' % (best_AtoB_epoch, best_AtoB_fid))
+    # logger.info('Best BtoA Epoch %d:%.2f' % (best_BtoA_epoch, best_BtoA_fid))
+    #
+    # util.combine_best_model(best_AtoB_epoch=best_AtoB_epoch,
+    #                         best_BtoA_epoch=best_BtoA_epoch,
+    #                         source_path=os.path.join(opt.checkpoints_dir, opt.name, 'checkpoints'),
+    #                         target_path=os.path.join(opt.checkpoints_dir, opt.name),
+    #                         type=opt.model)
+    # logger.info('Best model save in %s' % os.path.join(opt.checkpoints_dir, opt.name, 'model_best.pth'))
+    # commented by WH at 12:15 of 2021-04-10
