@@ -7,7 +7,7 @@
 </font>
 <br>
 
-'''
+```
 /home/wlw19/miniconda3/lib/python3.8/site-packages/torchvision/transforms/transforms.py:257: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
   warnings.warn(
 /home/wlw19/miniconda3/lib/python3.8/site-packages/torchvision/models/inception.py:80: FutureWarning: The default weight initialization of inception_v3 will be changed in future releases of torchvision. If you wish to keep the old behavior (which leads to long initialization times due to scipy/scipy#11299), please set init_weights=True.
@@ -24,7 +24,7 @@ Traceback (most recent call last):
   File "/home/wlw19/.local/lib/python3.8/site-packages/numpy/lib/npyio.py", line 259, in __getitem__
     raise KeyError("%s is not a file in the archive" % key)
 KeyError: 'mu is not a file in the archive'
-'''
+```
 
 <font size =4 face=宋体>&emsp;&emsp;刚开始我没有看源码，对这个错误不明所以，看了后才知道：原作者是一边训练数据、训练一次后就测试FID，并把FID值最低的模型权重的epoch数、FID值都保存下来，报错代码的**m2, s1**就是用来测试FID的。但我用自己的数据所生成的**npz**文件没有这两个标签，所以报错。（我写了个脚本，测了一下自己数据生成的 **npz** ，只有一个vol标签）
 </font>
